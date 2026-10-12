@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const AUTH_FILE = 'playwright/.auth/user.json';
+
 export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
@@ -12,5 +14,18 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    { name: 'setup', testMatch: /.*\.setup\.ts/ },
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'], storageState: AUTH_FILE },
+      dependencies: ['setup'],
+      testIgnore: /login\.spec\.ts/,
+    },
+    {
+      name: 'no-auth',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /login\.spec\.ts/,
+    },
+  ],
 });
